@@ -1,0 +1,56 @@
+from bs4 import BeautifulSoup
+import requests
+import json
+def scrap(url):
+    d1={}
+    u=[]
+    page=requests.get(url)
+    soup=BeautifulSoup(page.text,'html.parser')
+    for ul in soup.find_all('a', class_="ipc-metadata-list-item_list-content-item ipc-metadata-list-item_list-content-item--link"):
+        u.append(ul.get_text())
+    list=["Hindi","English","Tamil","Telugu","Malayalam","Kannada","Bengali"]
+    hh=[]
+    for i in u:
+        for j in list:
+            if i==j:
+                hh.append(i)
+    d1["language"]=hh
+    movie_name=soup.find("h1",class_="sc-b73cd867-0 eKrKux").get_text()
+    d1["movie_name"]=movie_name
+    bio=soup.find("div",class_="sc-16ede01-7 hrgVKw").get_text()
+    d1["bio"]=[bio]
+    print(bio)
+    director=soup.find("a",class_="ipc-metadata-list-item_list-content-item ipc-metadata-list-item_list-content-item--link").get_text()
+    d1["Director"]=[director]
+    # print(director)
+    poster_image=soup.find("div",class_="ipc-media ipc-media--poster-27x40 ipc-image-media-ratio--poster-27x40 ipc-media--baseAlt ipc-media--poster-l ipc-poster_poster-image ipc-media_img").img['src']
+    d1["postername"]=poster_image
+    # print(poster_image)
+    abc=soup.find('div',class_="ipc-chip-list__scroller")
+    ga=abc.find_all('span')
+    # print(ga)
+    list1=[]
+    for i in ga:
+        list1.append(i.get_text())
+    d1['genre']=list1
+    # print(list1)
+    Detail=soup.find("section",cel_widget_id="StaticFeature_Details")
+    s=Detail.find_all("div")
+    y=[]
+    for ul in s:
+        h=ul.find_all("ul")
+        for li in h:
+            o=li.find_all("li")
+            for aa in o:
+                z=aa.find_all('a')
+                dtails=[details.get_text() for details in z]
+                for p in dtails:
+                    y.append(p)   
+    b=y[1].split()
+    d1["country"]=b[3]
+    d1["release_year"]=b[2]
+    d1["release_date"]=b[1]+b[0]
+    with open("Task_4.json","w")as h:
+        json.dump(d1,h,indent=4)
+url= "https://www.imdb.com/title/tt1187043/"
+scrap(url)
